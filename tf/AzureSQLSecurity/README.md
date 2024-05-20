@@ -37,6 +37,8 @@ After verifying the service endpoint, I enhanced security by implementing a priv
 - **Connection Test**: Verified the database connection from the VM again, ensuring successful access through the private endpoint.
 - **Security Check**: Ensured the database was not accessible from any other source, including my own laptop, to confirm the security configuration.
 
+> Note: Implementing both the service endpoint and private link was done in two separate steps to explore both approaches in securing the SQL Database. The private link is a more secure approach in general, as it ensures that nothing goes through the internet.
+
 ## Importance of Infrastructure as Code with Terraform
 
 ### Modular Approach
