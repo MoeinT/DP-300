@@ -1,49 +1,58 @@
-# Introduction to Azure Virtual Network Peering
+# Azure SQL Server Security
 
-Azure Virtual Network (VNet) Peering is a networking feature that enables connecting two virtual networks in the same or different regions through the Azure backbone network. It allows resources in those virtual networks to communicate securely with each other as if they were part of the same network.
+## Goals and Objectives
 
-# Scenario and Architecture
+The primary goal of this exercise was to enhance the security of an Azure SQL Server by implementing service endpoints and private links. These approaches are crucial for ensuring that the SQL Server is only accessible through secure and controlled channels.
 
-In this exercise, we explored Azure VNet Peering by setting up two virtual networks: source-Vnet and target-Vnet. Each virtual network contained a subnet: source-subnet and target-subnet, respectively. Within these subnets, we deployed virtual machines equipped with public IP addresses for remote access via RDP.
+## Steps
 
-Initially, we encountered connectivity issues when attempting to access services deployed in the target-Vnet from the source-Vnet. This was due to the isolation between the two virtual networks.
+### 1. Infrastructure Setup with Terraform
 
-To resolve this, we implemented bidirectional VNet peering between source-Vnet and target-Vnet. This configuration allowed seamless and secure communication between the virtual machines residing in the different subnets across the two virtual networks.
+To manage and deploy the necessary resources, I used Terraform and created several modules:
 
-## Importance of Virtual Network Peering
+- **Azure SQL Server and Azure SQL Database**: Deployed using Terraform modules for easy management and reusability.
+- **Resource Group**: Created to logically organize all related resources.
+- **Virtual Network (VNet) and Subnet**: Provisioned to segregate and secure network resources.
+- **Network Security Group (NSG)**: Configured with rules to secure the subnet.
+- **Virtual Machine (VM) and Network Interface Card (NIC)**: Deployed to facilitate testing of the SQL Database connection.
+- **Public IP Address**: Assigned to the VM for remote access.
+- **Network Security Rule**: Added to the NSG to allow RDP access to the VM.
 
-Virtual Network Peering offers several benefits:
+### 2. Testing SQL Database Connection
 
-**Simplified Network Configuration -** It eliminates the need for complex network setups or VPN gateways to enable communication between virtual networks.
+- **VM Setup**: The VM was configured with Microsoft SQL Management Studio to test connectivity to the SQL Database.
+- **Service Endpoint**: Created a server VNet rule to allow communication between the subnet and the SQL Server. This setup was verified by successfully connecting to the database from the VM.
 
-**Improved Latency and Throughput -** Since communication occurs over Azure's backbone network, it typically offers lower latency and higher throughput compared to traditional network setups.
+### 3. Implementing Private Endpoint
 
-**Enhanced Security -** By default, traffic between peered virtual networks remains within the Azure backbone, ensuring data privacy and security.
+After verifying the service endpoint, I enhanced security by implementing a private endpoint:
 
-**Cost Efficiency -** VNet peering is a cost-effective solution for connecting resources within Azure as it avoids the additional expenses associated with data transfer or VPN gateways.
+- **Private Endpoint**: Deployed to allow secure, private access to the SQL Server.
+- **Private DNS Zone**: Created with the domain name `privatelink.database.windows.net` to manage DNS resolution for the private endpoint.
+- **DNS VNet Link**: Established to link the private DNS zone to the VNet.
+- **A Record**: Added to map the Fully Qualified Domain Name (FQDN) of the DNS to the private IP address of the endpoint.
 
-# Network Watcher
-## Connection Monitor
+### 4. Final Testing and Validation
 
-To monitor the connectivity between virtual machines across the peered virtual networks, we deployed Azure Network Watcher along with Connection Monitor.
+- **Connection Test**: Verified the database connection from the VM again, ensuring successful access through the private endpoint.
+- **Security Check**: Ensured the database was not accessible from any other source, including my own laptop, to confirm the security configuration.
 
-Azure Network Watcher provides tools to monitor, diagnose, and gain insights into the network infrastructure. It helps in identifying and resolving network issues efficiently.
+## Importance of Infrastructure as Code with Terraform
 
-Connection Monitor, a feature of Azure Network Watcher, continuously monitors connectivity between specified source and destination virtual machines. In our scenario, Connection Monitor played a crucial role in verifying the successful establishment of connectivity between the virtual machines across the peered virtual networks.
+### Modular Approach
 
-By leveraging Network Watcher and Connection Monitor, we were able to ensure the reliability and stability of the communication between the virtual machines deployed in the source-Vnet and target-Vnet, thus enhancing the overall performance and resilience of our Azure network architecture.
+Using Terraform's modular approach provides several advantages:
 
-## Flow Log
-In our Azure network architecture, we've incorporated Flow Logs as part of our network security monitoring strategy. Flow Logs provide detailed visibility into the traffic flowing through our network security groups (NSGs) by capturing network activity logs. Flow Logs capture information about the network traffic that traverses the NSGs associated with our Azure virtual networks. These logs include details such as source and destination IP addresses, ports, protocols, and traffic direction (inbound or outbound). Flow data is sent to Azure Storage from where you can access it and export it to any visualization tool, security information and event management (SIEM) solution, or intrusion detection system (IDS) of your choice.
+- **Reusability**: Modules can be reused across different projects, reducing the need for repetitive code.
+- **Scalability**: Modular code can be easily scaled and maintained.
+- **Version Control**: Changes to infrastructure can be tracked and managed effectively through version control systems.
 
-# Infrastructure as Code with Terraform
-As our infrastructure requirements evolve, Terraform empowers us to scale our network resources seamlessly. Adding additional subnets, virtual machines, or peering connections can be achieved by simply updating our Terraform configuration files. Terraform also facilitated the deployment of Azure Network Watcher and Connection Monitor as integral parts of our network monitoring strategy.
+### Managing Infrastructure
 
-## Terraform modules
-Terraform modules played a central role in organizing and structuring our deployment. Each aspect of our Azure infrastructure, including virtual networks, subnets, virtual machines, network security groups, and monitoring services, was encapsulated within its own Terraform module.
+Infrastructure as Code (IaC) with Terraform allows for:
 
-By modularizing our Terraform configuration, we ensured a clear separation of concerns and enhanced maintainability. Each module represented a distinct component of our architecture, making it easier to understand, update, and extend our infrastructure as needed. Below we can see the architecture diagram used in this exercise: 
+- **Automation**: Automated deployment and management of infrastructure, reducing manual errors and increasing efficiency.
+- **Consistency**: Ensuring that infrastructure is deployed in a consistent manner every time.
+- **Collaboration**: Facilitating collaboration among team members by providing a clear, codified representation of infrastructure.
 
-<p align="center">
-  <img width="450" height="350" src=./assets/ConnectionMonitor.png>
-</p>
+By leveraging Terraform for this exercise, we ensured a streamlined, repeatable, and secure deployment process for all necessary infrastructure components.
