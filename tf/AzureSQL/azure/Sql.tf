@@ -13,6 +13,18 @@ module "SQLServers" {
   }
 }
 
+# Allowing Azure Services to Access the Database
+# module "ServerFirewallRules" {
+#   source = "../../CommonModules/AzureSQLFirewallRule"
+#   properties = {
+#     "allow-azure-services-${var.env}" = {
+#       server_id        = module.SQLServers.server-id["dp-300-sql-server-${var.env}"]
+#       start_ip_address = "0.0.0.0"
+#       end_ip_address   = "0.0.0.0"
+#     }
+#   }
+# }
+
 module "SQLDatabase" {
   source = "../../CommonModules/AzureSQLDatabase"
   properties = {
